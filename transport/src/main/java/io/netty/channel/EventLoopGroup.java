@@ -18,6 +18,10 @@ package io.netty.channel;
 import io.netty.util.concurrent.EventExecutorGroup;
 
 /**
+ *
+ *
+ * 特殊的 EventExecutorGroup ，用来注册 Channel 到 EventLoop。并且在EventLoop中处理 Java Nio Selector
+ *
  * Special {@link EventExecutorGroup} which allows registering {@link Channel}s that get
  * processed for later selection during the event loop.
  *

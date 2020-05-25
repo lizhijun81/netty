@@ -16,6 +16,10 @@
 package io.netty.util.concurrent;
 
 /**
+ * EventExecutor 是特殊的EventExecutorGroup
+ *
+ * 附带了 判断线程是否是在 EventLoop 中执行；除此之外，继承了 EventExecutorGroup 能过执行EventExecutorGroup的方法
+ *
  * The {@link EventExecutor} is a special {@link EventExecutorGroup} which comes
  * with some handy methods to see if a {@link Thread} is executed in a event loop.
  * Besides this, it also extends the {@link EventExecutorGroup} to allow for a generic

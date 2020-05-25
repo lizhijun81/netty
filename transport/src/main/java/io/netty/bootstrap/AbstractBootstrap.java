@@ -41,6 +41,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
+ * 1. AbstractBootstrap 是一个 辅助类，用来更容易创建 Channel
+ * 2. AbstractBootstrap 支持链式方法 更加容易的配置
+ *
  * {@link AbstractBootstrap} is a helper class that makes it easy to bootstrap a {@link Channel}. It support
  * method-chaining to provide an easy way to configure the {@link AbstractBootstrap}.
  *

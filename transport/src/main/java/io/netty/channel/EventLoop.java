@@ -18,6 +18,11 @@ package io.netty.channel;
 import io.netty.util.concurrent.OrderedEventExecutor;
 
 /**
+ *
+ * EventLoop 处理I/O操作当 Channel 被注册后。
+ * 一个 EventLoop 实例能够处理一个 或者 多个 Channel，其 依赖与EventLoop的具体实现
+ *
+ *
  * Will handle all the I/O operations for a {@link Channel} once registered.
  *
  * One {@link EventLoop} instance will usually handle more than one {@link Channel} but this may depend on
