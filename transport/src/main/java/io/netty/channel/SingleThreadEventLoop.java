@@ -27,6 +27,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
 
 /**
+ * 注册 Channel  到 EventLoop
+ *
  * Abstract base class for {@link EventLoop}s that execute all its submitted tasks in a single thread.
  *
  */

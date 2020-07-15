@@ -40,7 +40,7 @@ public abstract class AbstractByteBufAllocator implements ByteBufAllocator {
         ResourceLeakTracker<ByteBuf> leak;
         switch (ResourceLeakDetector.getLevel()) {
             case SIMPLE:
-                leak = AbstractByteBuf.leakDetector.track(buf);
+                leak = AbstractByteBuf.leakDetector.track(buf);// 当前buf是原对象的强引用;leak 本质是 WeakReference
                 if (leak != null) {
                     buf = new SimpleLeakAwareByteBuf(buf, leak);
                 }

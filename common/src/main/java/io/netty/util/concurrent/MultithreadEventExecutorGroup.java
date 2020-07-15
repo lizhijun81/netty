@@ -25,6 +25,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
+ * EventExecutorGroup 更注重的是线程的调度， 其本质上是 ExecutorService
+ *      1. 统一对EventExecutor的生命周期的维护
+ *      2. 多线程同时处理任务
+ * 负责对 EventExecutor 进行统一管理：shutdown、termination
+ *
  * Abstract base class for {@link EventExecutorGroup} implementations that handles their tasks with multiple threads at
  * the same time.
  */

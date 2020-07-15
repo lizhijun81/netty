@@ -283,6 +283,9 @@ public class FastThreadLocal<V> {
     }
 
     /**
+     * 当 FastThreadLocal 从 FastThreadLocalThread中 删除时会回调 onRemoval()。
+     * netty 不保证 onRemoval() 一定会被回调??
+     *
      * Invoked when this thread local variable is removed by {@link #remove()}. Be aware that {@link #remove()}
      * is not guaranteed to be called when the `Thread` completes which means you can not depend on this for
      * cleanup of the resources in the case of `Thread` completion.

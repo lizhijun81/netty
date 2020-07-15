@@ -24,15 +24,15 @@ import java.nio.ByteOrder;
 
 abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
 
-    private final Recycler.Handle<PooledByteBuf<T>> recyclerHandle;
+    private final Recycler.Handle<PooledByteBuf<T>> recyclerHandle;// 当前 PooledByteBuf 的回收器
 
-    protected PoolChunk<T> chunk;
-    protected long handle;
-    protected T memory;
-    protected int offset;
-    protected int length;
-    int maxLength;
-    PoolThreadCache cache;
+    protected PoolChunk<T> chunk;// 当前 PooledByteBuf 所在的 块
+    protected long handle;// 当前 PooledByteBuf 所在块、page中段 的位置； 高32位page中 段 的位置；低32位为 块的位置
+    protected T memory;// byte[] 的引用 或者 ByteBuffer 的 应用
+    protected int offset;// 当前 PooledByteBuf 在chunk中的偏移量; chunk中会保存多个 PooledByteBuf
+    protected int length;// 当前 PooledByteBuf 的长度
+    int maxLength;// 当前 PooledByteBuf 最大的容量
+    PoolThreadCache cache;// 当前 PooledByteBuf 关联的 PoolThreadCache 线程缓存池
     ByteBuffer tmpNioBuf;
     private ByteBufAllocator allocator;
 
@@ -57,14 +57,14 @@ abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
         assert chunk != null;
 
         this.chunk = chunk;
-        memory = chunk.memory;
+        memory = chunk.memory;// PoolChunk 的 memory = 16MB
         tmpNioBuf = nioBuffer;
         allocator = chunk.arena.parent;
         this.cache = cache;
         this.handle = handle;
-        this.offset = offset;
-        this.length = length;
-        this.maxLength = maxLength;
+        this.offset = offset;// page 在 PoolChunk 的 memory 中的偏移量
+        this.length = length;// 申请的ByteBuf的内存大小
+        this.maxLength = maxLength;// 实际分配的内存的大小；实际分配的内存的大小你申请的略大
     }
 
     /**
@@ -78,7 +78,7 @@ abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
     }
 
     @Override
-    public final int capacity() {
+    public final int capacity() {// ByteBuf 的 capacity 是 申请的 length
         return length;
     }
 
@@ -93,7 +93,7 @@ abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
             }
         } else {
             if (newCapacity > length) {
-                if (newCapacity <= maxLength) {
+                if (newCapacity <= maxLength) {// 动态扩容最大扩容到 maxLength
                     length = newCapacity;
                     return this;
                 }
@@ -171,7 +171,7 @@ abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
             chunk.arena.free(chunk, tmpNioBuf, handle, maxLength, cache);
             tmpNioBuf = null;
             chunk = null;
-            recycle();
+            recycle();// 将当前 PoolByteBuf 在堆中的空间 缓存到 threadLocal 的 栈中
         }
     }
 

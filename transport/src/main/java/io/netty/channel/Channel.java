@@ -49,6 +49,11 @@ import java.net.SocketAddress;
  * operation has succeeded, failed, or canceled.
  *
  * <h3>Channels are hierarchical</h3>
+ *多层次的：
+ *  1. 每个Channel都有一个parent
+ *  2. 层次结构的语义取决于通道所属的传输实现。
+ * 例如，您可以编写一个新的Channel实现来创建共享一个套接字连接的子通道；
+ * BEEP 和 SSH 公用 socket connection
  * <p>
  * A {@link Channel} can have a {@linkplain #parent() parent} depending on
  * how it was created.  For instance, a {@link SocketChannel}, that was accepted
@@ -62,6 +67,9 @@ import java.net.SocketAddress;
  * <a href="http://en.wikipedia.org/wiki/Secure_Shell">SSH</a> do.
  *
  * <h3>Downcast to access transport-specific operations</h3>
+ * 向下转换 执行 具体的transport操作
+ * 1. 一些传输公开特定于传输的其他操作。
+ * 2. 向下转换成具体的子类型后调用操作。
  * <p>
  * Some transports exposes additional operations that is specific to the
  * transport.  Down-cast the {@link Channel} to sub-type to invoke such

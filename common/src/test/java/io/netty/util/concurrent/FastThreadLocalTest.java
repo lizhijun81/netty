@@ -197,6 +197,22 @@ public class FastThreadLocalTest {
         assertEquals(threadName, threadLocal2.onRemovalCalled.get());
     }
 
+    @Test
+    public void test() throws InterruptedException {
+        final TestFastThreadLocal threadLocal = new TestFastThreadLocal();
+
+        Thread thread = new FastThreadLocalThread() {
+            @Override
+            public void run() {
+                threadLocal.set("Test1");
+            }
+        };
+        thread.setName("test-1");
+        thread.start();
+
+        System.out.println("6789");
+    }
+
     private static final class TestFastThreadLocal extends FastThreadLocal<String> {
 
         final AtomicReference<String> onRemovalCalled = new AtomicReference<String>();

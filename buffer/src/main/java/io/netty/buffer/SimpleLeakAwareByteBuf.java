@@ -97,6 +97,11 @@ class SimpleLeakAwareByteBuf extends WrappedByteBuf {
         return this;
     }
 
+    /**
+     * 手动释放
+     *    当内部的计数器变为0则返回true，表示该对象不再被使用，需要对其进行资源的释放。否则当对象被垃圾回收器回收后(只释放了内存)，不能被释放占用的连接、堆外内存等。
+     *    当对象不再被使用时，将该ByteBuf对象从资源检测探针中移除。
+     */
     @Override
     public boolean release() {
         if (super.release()) {

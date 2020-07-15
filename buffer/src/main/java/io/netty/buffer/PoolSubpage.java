@@ -19,20 +19,24 @@ package io.netty.buffer;
 final class PoolSubpage<T> implements PoolSubpageMetric {
 
     final PoolChunk<T> chunk;
+    private final int pageSize;// page的大小
+    int elemSize;// 当前page分配subPage的大小
+    private int maxNumElems;// 最多能保存分配subPage的数量
+    private int numAvail;// 剩余能够分配的subPage的数量
+
     private final int memoryMapIdx;
     private final int runOffset;
-    private final int pageSize;
-    private final long[] bitmap;
+
+    private final long[] bitmap;// 位图 标记 那些page中的段已经被使用: 标记为1的位表示该位置对应的段已经被使用
+    private int bitmapLength;// 位图的长度
 
     PoolSubpage<T> prev;
     PoolSubpage<T> next;
 
     boolean doNotDestroy;
-    int elemSize;
-    private int maxNumElems;
-    private int bitmapLength;
+
     private int nextAvail;
-    private int numAvail;
+
 
     // TODO: Test if adding padding helps under contention
     //private long pad0, pad1, pad2, pad3, pad4, pad5, pad6, pad7;
@@ -60,11 +64,11 @@ final class PoolSubpage<T> implements PoolSubpageMetric {
         doNotDestroy = true;
         this.elemSize = elemSize;
         if (elemSize != 0) {
-            maxNumElems = numAvail = pageSize / elemSize;
+            maxNumElems = numAvail = pageSize / elemSize;// 2
             nextAvail = 0;
-            bitmapLength = maxNumElems >>> 6;
-            if ((maxNumElems & 63) != 0) {
-                bitmapLength ++;
+            bitmapLength = maxNumElems >>> 6;// 一个long类型是 64 位；
+            if ((maxNumElems & 63) != 0) {// 最少保证有一个bitmap进行标记，page中的段的使用
+                bitmapLength ++;//1
             }
 
             for (int i = 0; i < bitmapLength; i ++) {
@@ -87,16 +91,16 @@ final class PoolSubpage<T> implements PoolSubpageMetric {
         }
 
         final int bitmapIdx = getNextAvail();
-        int q = bitmapIdx >>> 6;
-        int r = bitmapIdx & 63;
+        int q = bitmapIdx >>> 6;// bitmap 中第几个数组
+        int r = bitmapIdx & 63;// bitmap 中第几个数组的第几位
         assert (bitmap[q] >>> r & 1) == 0;
-        bitmap[q] |= 1L << r;
+        bitmap[q] |= 1L << r;//
 
-        if (-- numAvail == 0) {
+        if (-- numAvail == 0) {// 当 page 剩余的空间不在不能被分配时，page 中的 最后的 subPage 将被指向 Head
             removeFromPool();
         }
 
-        return toHandle(bitmapIdx);
+        return toHandle(bitmapIdx);// 当前page在chunk中二叉树的位置 和 分配的PoolSubpage段在PoolSubpage中为位置
     }
 
     /**
@@ -107,12 +111,12 @@ final class PoolSubpage<T> implements PoolSubpageMetric {
         if (elemSize == 0) {
             return true;
         }
-        int q = bitmapIdx >>> 6;
-        int r = bitmapIdx & 63;
+        int q = bitmapIdx >>> 6;// bitmap 中第几个数组
+        int r = bitmapIdx & 63;// bitmap 中第几个数组的第几位
         assert (bitmap[q] >>> r & 1) != 0;
-        bitmap[q] ^= 1L << r;
+        bitmap[q] ^= 1L << r;// bitmap 第几个数组的第几位 取异或
 
-        setNextAvail(bitmapIdx);
+        setNextAvail(bitmapIdx);// 设置下次分配的索引处为当前释放的索引
 
         if (numAvail ++ == 0) {
             addToPool(head);
@@ -156,7 +160,7 @@ final class PoolSubpage<T> implements PoolSubpageMetric {
     }
 
     private int getNextAvail() {
-        int nextAvail = this.nextAvail;
+        int nextAvail = this.nextAvail;// 0
         if (nextAvail >= 0) {
             this.nextAvail = -1;
             return nextAvail;
@@ -176,6 +180,9 @@ final class PoolSubpage<T> implements PoolSubpageMetric {
         return -1;
     }
 
+    /**
+     * 返回 bitmap 中 n[bitmap的长度] * 64 + j = 第几位是可用的
+     */
     private int findNextAvail0(int i, long bits) {
         final int maxNumElems = this.maxNumElems;
         final int baseVal = i << 6;
@@ -194,7 +201,7 @@ final class PoolSubpage<T> implements PoolSubpageMetric {
         return -1;
     }
 
-    private long toHandle(int bitmapIdx) {
+    private long toHandle(int bitmapIdx) {//高32放着一个PoolSubpage里面哪段的哪个，低32位放着哪个叶子节点
         return 0x4000000000000000L | (long) bitmapIdx << 32 | memoryMapIdx;
     }
 

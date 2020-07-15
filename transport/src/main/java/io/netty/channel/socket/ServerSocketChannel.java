@@ -20,6 +20,7 @@ import io.netty.channel.ServerChannel;
 import java.net.InetSocketAddress;
 
 /**
+ * ServerChannel 接受 TCP/IP 的 连接
  * A TCP/IP {@link ServerChannel} which accepts incoming TCP/IP connections.
  */
 public interface ServerSocketChannel extends ServerChannel {

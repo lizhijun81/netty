@@ -44,6 +44,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * AbstractNioChannel 类是 使用 Selector 的基本方法
  * Abstract base class for {@link Channel} implementations which use a Selector based approach.
  */
 public abstract class AbstractNioChannel extends AbstractChannel {
@@ -74,6 +75,11 @@ public abstract class AbstractNioChannel extends AbstractChannel {
     private SocketAddress requestedRemoteAddress;
 
     /**
+     * 服务端
+     *      ch 是 java.nio.channels.ServerSocketChannel
+     *      channel 实现是 NioServerSocketChannel
+     *      readInterestOp 的集合是 SelectionKey.OP_ACCEPT
+     *
      * Create a new instance
      *
      * @param parent            the parent {@link Channel} by which this instance was created. May be {@code null}

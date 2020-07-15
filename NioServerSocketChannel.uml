@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>io.netty.channel.socket.nio.NioServerSocketChannel</OriginalElement>
+  <nodes>
+    <node x="642.5" y="166.0">io.netty.channel.socket.ServerSocketChannel</node>
+    <node x="354.25000000000006" y="0.0">io.netty.channel.Channel</node>
+    <node x="61.25" y="332.0">io.netty.channel.socket.nio.NioSocketChannel</node>
+    <node x="540.0" y="332.0">io.netty.channel.socket.nio.NioServerSocketChannel</node>
+    <node x="308.34615384615387" y="83.0">io.netty.channel.AbstractChannel</node>
+    <node x="291.84615384615387" y="166.0">io.netty.channel.nio.AbstractNioChannel</node>
+    <node x="418.5" y="249.0">io.netty.channel.nio.AbstractNioMessageChannel</node>
+    <node x="0.0" y="83.0">io.netty.channel.socket.SocketChannel</node>
+    <node x="108.5" y="249.0">io.netty.channel.nio.AbstractNioByteChannel</node>
+    <node x="675.5" y="83.0">io.netty.channel.ServerChannel</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="io.netty.channel.socket.nio.NioSocketChannel" target="io.netty.channel.nio.AbstractNioByteChannel">
+      <point x="56.0" y="-16.5" />
+      <point x="229.25" y="307.0" />
+      <point x="253.5" y="307.0" />
+      <point x="0.0" y="16.5" />
+    </edge>
+    <edge source="io.netty.channel.socket.nio.NioServerSocketChannel" target="io.netty.channel.nio.AbstractNioMessageChannel">
+      <point x="-72.5" y="-16.5" />
+      <point x="612.5" y="307.0" />
+      <point x="580.0" y="307.0" />
+      <point x="0.0" y="16.5" />
+    </edge>
+    <edge source="io.netty.channel.ServerChannel" target="io.netty.channel.Channel">
+      <point x="0.0" y="-16.5" />
+      <point x="771.0" y="58.0" />
+      <point x="458.4166666666667" y="58.0" />
+      <point x="41.66666666666663" y="16.5" />
+    </edge>
+    <edge source="io.netty.channel.socket.ServerSocketChannel" target="io.netty.channel.ServerChannel">
+      <point x="0.0" y="-16.5" />
+      <point x="0.0" y="16.5" />
+    </edge>
+    <edge source="io.netty.channel.nio.AbstractNioChannel" target="io.netty.channel.AbstractChannel">
+      <point x="0.0" y="-16.5" />
+      <point x="0.0" y="16.5" />
+    </edge>
+    <edge source="io.netty.channel.nio.AbstractNioMessageChannel" target="io.netty.channel.nio.AbstractNioChannel">
+      <point x="0.0" y="-16.5" />
+      <point x="580.0" y="224.0" />
+      <point x="476.34615384615387" y="224.0" />
+      <point x="61.5" y="16.5" />
+    </edge>
+    <edge source="io.netty.channel.socket.nio.NioSocketChannel" target="io.netty.channel.socket.SocketChannel">
+      <point x="-56.0" y="-16.5" />
+      <point x="117.25" y="307.0" />
+      <point x="95.5" y="307.0" />
+      <point x="0.0" y="16.5" />
+    </edge>
+    <edge source="io.netty.channel.socket.nio.NioServerSocketChannel" target="io.netty.channel.socket.ServerSocketChannel">
+      <point x="72.5" y="-16.5" />
+      <point x="757.5" y="307.0" />
+      <point x="771.0" y="307.0" />
+      <point x="0.0" y="16.5" />
+    </edge>
+    <edge source="io.netty.channel.nio.AbstractNioByteChannel" target="io.netty.channel.nio.AbstractNioChannel">
+      <point x="0.0" y="-16.5" />
+      <point x="253.5" y="224.0" />
+      <point x="353.34615384615387" y="224.0" />
+      <point x="-61.5" y="16.5" />
+    </edge>
+    <edge source="io.netty.channel.socket.SocketChannel" target="io.netty.channel.Channel">
+      <point x="0.0" y="-16.5" />
+      <point x="95.5" y="58.0" />
+      <point x="375.08333333333337" y="58.0" />
+      <point x="-41.666666666666686" y="16.5" />
+    </edge>
+    <edge source="io.netty.channel.AbstractChannel" target="io.netty.channel.Channel">
+      <point x="5.6843418860808015E-14" y="-16.5" />
+      <point x="414.8461538461539" y="58.0" />
+      <point x="416.75000000000006" y="58.0" />
+      <point x="0.0" y="16.5" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="1.0" x="450.0" y="182.5" />
+  <SelectedNodes>
+    <node>io.netty.channel.AbstractChannel</node>
+  </SelectedNodes>
+  <Categories />
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+

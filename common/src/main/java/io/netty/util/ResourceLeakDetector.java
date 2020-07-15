@@ -109,10 +109,10 @@ public class ResourceLeakDetector<T> {
                     "-Dio.netty.noResourceLeakDetection is deprecated. Use '-D{}={}' instead.",
                     PROP_LEVEL, DEFAULT_LEVEL.name().toLowerCase());
         } else {
-            disabled = false;
+            disabled = false;// 默认没有禁用泄露探测器
         }
 
-        Level defaultLevel = disabled? Level.DISABLED : DEFAULT_LEVEL;
+        Level defaultLevel = disabled? Level.DISABLED : DEFAULT_LEVEL;// 默认是simple 级别
 
         // First read old property name
         String levelStr = SystemPropertyUtil.get(PROP_LEVEL_OLD, defaultLevel.name());
@@ -294,10 +294,16 @@ public class ResourceLeakDetector<T> {
                 break;
             }
 
+            /*
+                遍历 ReferenceQueue 队列时，当探针(探针本质是WeakReference)在ReferenceQueue中时，标明 探针探测的资源(如ByteBuf)已经被垃圾回收器回收;
+                判断当前探针是否仍然存在allLeaks(探针集合)中，不存在则表示 ByteBuf 在完全 release 释放空间时，已经将该ByteBuf对象的探针从探针集合中移除，不存资源泄露；
+                反之，探针仍然存在allLeaks(探针集合)，则表示关联的资源已经被垃圾回收器回收，但是探针还在探针集合中，则说明 探针探测的资源没有进行正确的 release，即存在资源泄露。
+             */
             if (!ref.dispose()) {
                 continue;
             }
 
+            // 生成资源泄露的堆栈信息
             String records = ref.toString();
             if (reportedLeaks.putIfAbsent(records, Boolean.TRUE) == null) {
                 if (records.isEmpty()) {
@@ -461,6 +467,13 @@ public class ResourceLeakDetector<T> {
             return false;
         }
 
+        /**
+         *  如果一个实例对象不再被需要，则可以判定为可回收。即使该实例对象的一个具体方法正在执行过程中，也是可以的。
+         *  更确切一些的说，如果一个实例对象的方法体中，不再需要读取或者写入实例对象的属性，则此时JVM可以回收该对象，即使方法还没有完成。
+         *
+         *  当 执行ByteBuf的release时，如果该方法内部不在使用该对象时，在方法运行过程中，也可以对该ByteBuf进行GC回收；所以在reachabilityFence0中强加一个对ByteBuf的引用。
+         *  使得ByteBuf只能在 release() 方法执行完毕后才能被GC回收。
+         */
         @Override
         public boolean close(T trackedObject) {
             // Ensure that the object that was tracked is the same as the one that was passed to close(...).

@@ -285,10 +285,10 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
         final ChannelFuture regFuture = initAndRegister();
         final Channel channel = regFuture.channel();
         if (regFuture.cause() != null) {
-            return regFuture;
+            return regFuture;// 失败返回
         }
 
-        if (regFuture.isDone()) {
+        if (regFuture.isDone()) {// 注册成功完成
             // At this point we know that the registration was complete and successful.
             ChannelPromise promise = channel.newPromise();
             doBind0(regFuture, channel, localAddress, promise);
@@ -320,7 +320,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     final ChannelFuture initAndRegister() {
         Channel channel = null;
         try {
-            channel = channelFactory.newChannel();
+            channel = channelFactory.newChannel();// 反射创建 NioServerSocketChannel 实例
             init(channel);
         } catch (Throwable t) {
             if (channel != null) {
@@ -333,7 +333,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
             return new DefaultChannelPromise(new FailedChannel(), GlobalEventExecutor.INSTANCE).setFailure(t);
         }
 
-        ChannelFuture regFuture = config().group().register(channel);
+        ChannelFuture regFuture = config().group().register(channel);// boss thread 的 NioEventLoopGroup
         if (regFuture.cause() != null) {
             if (channel.isRegistered()) {
                 channel.close();

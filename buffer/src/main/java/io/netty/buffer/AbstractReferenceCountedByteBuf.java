@@ -36,7 +36,7 @@ public abstract class AbstractReferenceCountedByteBuf extends AbstractByteBuf {
     private volatile int refCnt = 2;
 
     static {
-        long refCntFieldOffset = -1;
+        long refCntFieldOffset = -1;// 是refCnt字段在内存中的偏移量
         try {
             if (PlatformDependent.hasUnsafe()) {
                 refCntFieldOffset = PlatformDependent.objectFieldOffset(

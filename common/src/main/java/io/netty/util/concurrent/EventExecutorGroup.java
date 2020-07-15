@@ -24,10 +24,14 @@ import java.util.concurrent.TimeUnit;
 /**
  *
  * EventExecutorGroup 本质是ScheduledExecutorService，即 ExecutorService
- * EventExecutorGroup 管理 EventExecutor
- *
- * 1. EventExecutorGroup 的职责是 通过使用 EventExecutor.next() 提供 EventExecutor
- * 2. 管理 EventExecutor 生命周期 并且 允许全局的关闭
+ * <br/>
+ * EventExecutorGroup 管理 线程的调度、EventExecutor 的管理
+ *      EventExecutor 内部启动线程
+ *      EventExecutorGroup 类似于 线程池 对EventExecutor 本身和其启动的线程进行管理
+ * <ol>
+ *  <li>EventExecutorGroup 的职责是 通过使用 EventExecutor.next() 提供 EventExecutor</li>
+ *  <li>管理 EventExecutor 生命周期 并且 允许全局的关闭</li>
+ * </ol>
  *
  *
  * The {@link EventExecutorGroup} is responsible for providing the {@link EventExecutor}'s to use

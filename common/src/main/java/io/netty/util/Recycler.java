@@ -32,6 +32,10 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 /**
+ * 基于Stack的实现线程级别的轻量级的对象池
+ *  1. get()获取对象，从Stack中pop，如果pop为null，则通过newObject()创建默认的对象
+ *  2. DefaultHandle#recycle()，给Stack push 对象
+ *
  * Light-weight object pool based on a thread-local stack.
  *
  * @param <T> the type of the pooled object
@@ -587,7 +591,7 @@ public abstract class Recycler<T> {
 
         void push(DefaultHandle<?> item) {
             Thread currentThread = Thread.currentThread();
-            if (threadRef.get() == currentThread) {
+            if (threadRef.get() == currentThread) {//
                 // The current Thread is the thread that belongs to the Stack, we can try to push the object now.
                 pushNow(item);
             } else {

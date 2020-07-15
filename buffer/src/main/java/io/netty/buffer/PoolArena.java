@@ -98,8 +98,8 @@ abstract class PoolArena<T> implements PoolArenaMetric {
             tinySubpagePools[i] = newSubpagePoolHead(pageSize);
         }
 
-        numSmallSubpagePools = pageShifts - 9;
-        smallSubpagePools = newSubpagePoolArray(numSmallSubpagePools);
+        numSmallSubpagePools = pageShifts - 9;// pageShifts = 13
+        smallSubpagePools = newSubpagePoolArray(numSmallSubpagePools);// smallSubpagePools = 4
         for (int i = 0; i < smallSubpagePools.length; i ++) {
             smallSubpagePools[i] = newSubpagePoolHead(pageSize);
         }
@@ -148,6 +148,9 @@ abstract class PoolArena<T> implements PoolArenaMetric {
         return buf;
     }
 
+    // MAX: 10 0000 0000 >>> 4 = 10 0000 = 32
+    // MIN: 00 0000 1000 >>> 4 = 00 0000 = 0
+    // 00 0000 ~ 10 0000 = 0 ~ 32
     static int tinyIdx(int normCapacity) {
         return normCapacity >>> 4;
     }
@@ -168,7 +171,7 @@ abstract class PoolArena<T> implements PoolArenaMetric {
     }
 
     // normCapacity < 512
-    static boolean isTiny(int normCapacity) {
+    static boolean isTiny(int normCapacity) {// 0 0000 0000 9位
         return (normCapacity & 0xFFFFFE00) == 0;
     }
 
@@ -362,7 +365,7 @@ abstract class PoolArena<T> implements PoolArenaMetric {
         }
 
         // Quantum-spaced
-        if ((reqCapacity & 15) == 0) {
+        if ((reqCapacity & 15) == 0) {// reqCapacity 第四位必须是0
             return reqCapacity;
         }
 

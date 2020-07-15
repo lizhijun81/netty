@@ -27,6 +27,9 @@ import static io.netty.util.concurrent.AbstractEventExecutor.*;
 
 
 /**
+ * Scheduled 的 ExecutorService 的 具体实现
+ *      其内部将Scheduled委托给 具体的 EventExecutor
+ *
  * Abstract base class for {@link EventExecutorGroup} implementations.
  */
 public abstract class AbstractEventExecutorGroup implements EventExecutorGroup {

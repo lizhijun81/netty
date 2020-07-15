@@ -64,6 +64,15 @@ public class PooledByteBufAllocatorTest extends AbstractByteBufAllocatorTest<Poo
     }
 
     @Test
+    public void testPooledHeapByteBuf() {
+        PooledByteBufAllocator pooledByteBufAllocator = new PooledByteBufAllocator(false);
+        ByteBuf buffer = pooledByteBufAllocator.buffer(3 * 1024);
+        ByteBuf buffer_1 = pooledByteBufAllocator.buffer(3 * 1024);
+        ByteBuf buffer_2 = pooledByteBufAllocator.buffer(3 * 1024);
+        System.out.println(buffer);
+    }
+
+    @Test
     public void testPooledUnsafeHeapBufferAndUnsafeDirectBuffer() {
         PooledByteBufAllocator allocator = newAllocator(true);
         ByteBuf directBuffer = allocator.directBuffer();

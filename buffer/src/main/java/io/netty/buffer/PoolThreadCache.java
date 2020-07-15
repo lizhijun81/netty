@@ -366,6 +366,14 @@ final class PoolThreadCache {
         }
     }
 
+    /**
+     * MemoryRegionCache 有两个子类
+     *     1.NormalMemoryRegionCache 正常分配一个poolSubPage
+     *     2.SubPageMemoryRegionCache 从poolSubPage中分配一段
+     *
+     * Queue 是用来保存 ByteBuf 完全初始化状态的ByteBuf
+     * RECYCLER 是 用来保存 Entry 初始状态的ByteBuf，当ByteBuf被allocate分配后，Entry被置为空并且压到和线程相关的轻量级别的RECYCLER 对象缓存池中；已达到复用的效果；
+     */
     private abstract static class MemoryRegionCache<T> {
         private final int size;
         private final Queue<Entry<T>> queue;
@@ -374,6 +382,8 @@ final class PoolThreadCache {
 
         MemoryRegionCache(int size, SizeClass sizeClass) {
             this.size = MathUtil.safeFindNextPositivePowerOfTwo(size);
+            // 多生产者单消费者队列：存在worker线程使用完后，将ByteBuffer传递给其他的用户线程；所以会出现多个业务线程保存ByteBuffer的情况，所以会出现多个生产者的情况；
+            // 多生产者单消费者队列能带来什么好处呢？
             queue = PlatformDependent.newFixedMpscQueue(this.size);
             this.sizeClass = sizeClass;
         }
@@ -385,21 +395,23 @@ final class PoolThreadCache {
                                         PooledByteBuf<T> buf, int reqCapacity);
 
         /**
+         * 出栈(没有的话创建)入队
          * Add to cache if not already full.
          */
         @SuppressWarnings("unchecked")
         public final boolean add(PoolChunk<T> chunk, ByteBuffer nioBuffer, long handle) {
-            Entry<T> entry = newEntry(chunk, nioBuffer, handle);
-            boolean queued = queue.offer(entry);
-            if (!queued) {
+            Entry<T> entry = newEntry(chunk, nioBuffer, handle);// 从Stack中pop出Entry【没有的话创建】，并且插入到queue
+            boolean queued = queue.offer(entry);// 将创建好的Entry添加到Queue中
+            if (!queued) {// 队列满了，将Entry释放并重新压倒 Stack 中
                 // If it was not possible to cache the chunk, immediately recycle the entry
-                entry.recycle();
+                entry.recycle();// push
             }
 
             return queued;
         }
 
         /**
+         * 出队入栈
          * Allocate something out of the cache if possible and remove the entry from the cache.
          */
         public final boolean allocate(PooledByteBuf<T> buf, int reqCapacity) {
@@ -408,7 +420,7 @@ final class PoolThreadCache {
                 return false;
             }
             initBuf(entry.chunk, entry.nioBuffer, entry.handle, buf, reqCapacity);
-            entry.recycle();
+            entry.recycle();// push
 
             // allocations is not thread-safe which is fine as this is only called from the same thread all time.
             ++ allocations;
@@ -463,9 +475,9 @@ final class PoolThreadCache {
 
         static final class Entry<T> {
             final Handle<Entry<?>> recyclerHandle;
-            PoolChunk<T> chunk;
-            ByteBuffer nioBuffer;
-            long handle = -1;
+            PoolChunk<T> chunk;// byteBuf 分配的 PoolChunk
+            ByteBuffer nioBuffer;// nioBuffer 在堆中的对象
+            long handle = -1; // 记录 byteBuf 在 PoolChunk 、PoolSubpage 中的位置编码
 
             Entry(Handle<Entry<?>> recyclerHandle) {
                 this.recyclerHandle = recyclerHandle;
@@ -489,7 +501,7 @@ final class PoolThreadCache {
         }
 
         @SuppressWarnings("rawtypes")
-        private static final Recycler<Entry> RECYCLER = new Recycler<Entry>() {
+        private static final Recycler<Entry> RECYCLER = new Recycler<Entry>() {// stack
             @SuppressWarnings("unchecked")
             @Override
             protected Entry newObject(Handle<Entry> handle) {

@@ -107,4 +107,5 @@ public class PoolArenaTest {
         Assert.assertEquals(1, metric.numNormalDeallocations());
         Assert.assertEquals(1, metric.numNormalAllocations());
     }
+
 }

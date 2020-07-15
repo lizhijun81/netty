@@ -89,7 +89,7 @@ import java.util.Deque;
  * 1) Compute d = log_2(chunkSize/size)
  * 2) Return allocateNode(d)
  *
- * Algorithm: [allocateSubpage(size)]
+ * Algorithm: [allocateSubpage(size)] 从叶子节点上查找一个Page进行分配
  * ----------
  * 1) use allocateNode(maxOrder) to find an empty (i.e., unused) leaf (i.e., page)
  * 2) use this handle to construct the PoolSubpage object or if it already exists just call init(normCapacity)
@@ -144,23 +144,25 @@ final class PoolChunk<T> implements PoolChunkMetric {
     PoolChunk(PoolArena<T> arena, T memory, int pageSize, int maxOrder, int pageShifts, int chunkSize, int offset) {
         unpooled = false;
         this.arena = arena;
-        this.memory = memory;
-        this.pageSize = pageSize;
-        this.pageShifts = pageShifts;
-        this.maxOrder = maxOrder;
+        this.memory = memory;//默认: new byte[16MB]
+        this.pageSize = pageSize;//  默认:8KB
+        this.pageShifts = pageShifts;// page 的掩码 默认:13
+        this.maxOrder = maxOrder;// 完全二叉树的层高 默认:11
         this.chunkSize = chunkSize;
         this.offset = offset;
         unusable = (byte) (maxOrder + 1);
         log2ChunkSize = log2(chunkSize);
+        // 判断分配的空间是否超过pageSize的大小
+        // 8*1024-1=1FFF=0000 0000 0000 0000 0001 1111 1111 1111; ~1FFF=1111 1111 1111 1111 1110 0000 0000 0000
         subpageOverflowMask = ~(pageSize - 1);
         freeBytes = chunkSize;
 
         assert maxOrder < 30 : "maxOrder should be < 30, but is: " + maxOrder;
-        maxSubpageAllocs = 1 << maxOrder;
+        maxSubpageAllocs = 1 << maxOrder;//叶子节点的数量  默认 2048
 
         // Generate the memory map.
-        memoryMap = new byte[maxSubpageAllocs << 1];
-        depthMap = new byte[memoryMap.length];
+        memoryMap = new byte[maxSubpageAllocs << 1];// memoryMap = new byte[4096]
+        depthMap = new byte[memoryMap.length];// 每个结点在完全二叉树中的深度; depthMap = new byte[4096]
         int memoryMapIndex = 1;
         for (int d = 0; d <= maxOrder; ++ d) { // move down the tree one level at a time
             int depth = 1 << d;
@@ -224,10 +226,10 @@ final class PoolChunk<T> implements PoolChunkMetric {
 
     boolean allocate(PooledByteBuf<T> buf, int reqCapacity, int normCapacity) {
         final long handle;
-        if ((normCapacity & subpageOverflowMask) != 0) { // >= pageSize
+        if ((normCapacity & subpageOverflowMask) != 0) { // >= pageSize；分配的空间大于PageSize的大小
             handle =  allocateRun(normCapacity);
         } else {
-            handle = allocateSubpage(normCapacity);
+            handle = allocateSubpage(normCapacity);//
         }
 
         if (handle < 0) {
@@ -352,10 +354,10 @@ final class PoolChunk<T> implements PoolChunkMetric {
 
             freeBytes -= pageSize;
 
-            int subpageIdx = subpageIdx(id);
+            int subpageIdx = subpageIdx(id);// 通过在memoryMap中的位置计算出subpages中为index
             PoolSubpage<T> subpage = subpages[subpageIdx];
             if (subpage == null) {
-                subpage = new PoolSubpage<T>(head, this, id, runOffset(id), pageSize, normCapacity);
+                subpage = new PoolSubpage<T>(head, this, id, runOffset(id), pageSize, normCapacity);// runOffset(id) 计算出 page在整块内存中为偏移量
                 subpages[subpageIdx] = subpage;
             } else {
                 subpage.init(head, normCapacity);
@@ -402,7 +404,7 @@ final class PoolChunk<T> implements PoolChunkMetric {
     void initBuf(PooledByteBuf<T> buf, ByteBuffer nioBuffer, long handle, int reqCapacity) {
         int memoryMapIdx = memoryMapIdx(handle);
         int bitmapIdx = bitmapIdx(handle);
-        if (bitmapIdx == 0) {
+        if (bitmapIdx == 0) {// 大于 pageSize 的情况下，不会在page中的进行段的分配
             byte val = value(memoryMapIdx);
             assert val == unusable : String.valueOf(val);
             buf.init(this, nioBuffer, handle, runOffset(memoryMapIdx) + offset,
@@ -465,11 +467,11 @@ final class PoolChunk<T> implements PoolChunkMetric {
     }
 
     private static int memoryMapIdx(long handle) {
-        return (int) handle;
+        return (int) handle;// 获取低32位
     }
 
     private static int bitmapIdx(long handle) {
-        return (int) (handle >>> Integer.SIZE);
+        return (int) (handle >>> Integer.SIZE);// 获取高32位
     }
 
     @Override
