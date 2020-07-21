@@ -252,7 +252,7 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
             }
 
             try {
-                childGroup.register(child).addListener(new ChannelFutureListener() {
+                childGroup.register(child).addListener(new ChannelFutureListener() {// 将NioSocketChannel 注册到 workNioEventLoop 中
                     @Override
                     public void operationComplete(ChannelFuture future) throws Exception {
                         if (!future.isSuccess()) {

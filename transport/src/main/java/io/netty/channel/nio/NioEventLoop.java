@@ -494,7 +494,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                     } finally {
                         // Ensure we always run tasks.
                         final long ioTime = System.nanoTime() - ioStartTime;
-                        runAllTasks(ioTime * (100 - ioRatio) / ioRatio);
+                        runAllTasks(ioTime * (100 - ioRatio) / ioRatio);// 计算 IoTask 的执行时长
                     }
                 }
             } catch (Throwable t) {
@@ -569,15 +569,15 @@ public final class NioEventLoop extends SingleThreadEventLoop {
             return;
         }
 
-        Iterator<SelectionKey> i = selectedKeys.iterator();
+        Iterator<SelectionKey> i = selectedKeys.iterator();// 和 Java NIO的代码编写方式相同，循环处理 SelectionKey
         for (;;) {
             final SelectionKey k = i.next();
             final Object a = k.attachment();
             i.remove();
 
-            if (a instanceof AbstractNioChannel) {
+            if (a instanceof AbstractNioChannel) {//
                 processSelectedKey(k, (AbstractNioChannel) a);
-            } else {
+            } else {// 处理NioTask的情况
                 @SuppressWarnings("unchecked")
                 NioTask<SelectableChannel> task = (NioTask<SelectableChannel>) a;
                 processSelectedKey(k, task);
@@ -634,7 +634,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
         if (!k.isValid()) {
             final EventLoop eventLoop;
             try {
-                eventLoop = ch.eventLoop();
+                eventLoop = ch.eventLoop();// bossNioEventLoop 和 workNioEventLoop
             } catch (Throwable ignored) {
                 // If the channel implementation throws an exception because there is no event loop, we ignore this
                 // because we are only trying to determine if ch is registered to this event loop and thus has authority
@@ -675,6 +675,8 @@ public final class NioEventLoop extends SingleThreadEventLoop {
 
             // Also check for readOps of 0 to workaround possible JDK bug which may otherwise lead
             // to a spin loop
+            // bossNioEventLoop -> NioServerSocketChannel -> SelectionKey.OP_ACCEPT
+            // workNioEventLoop -> NioSocketChannel -> SelectionKey.OP_READ
             if ((readyOps & (SelectionKey.OP_READ | SelectionKey.OP_ACCEPT)) != 0 || readyOps == 0) {
                 unsafe.read();
             }
@@ -767,7 +769,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
 
             for (;;) {
                 long timeoutMillis = (selectDeadLineNanos - currentTimeNanos + 500000L) / 1000000L;
-                if (timeoutMillis <= 0) {
+                if (timeoutMillis <= 0) {// 定时任务队列中存在定时任务已经超时或者即将在500ms后超时,则执行selector.selectNow();后,立即break;
                     if (selectCnt == 0) {
                         selector.selectNow();
                         selectCnt = 1;
@@ -785,10 +787,10 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                     break;
                 }
 
-                int selectedKeys = selector.select(timeoutMillis);
+                int selectedKeys = selector.select(timeoutMillis);// 不存在已经超时的定时任务，则阻塞执行selector.select(time); 阻塞时间为第一个定时任务超时的时间
                 selectCnt ++;
 
-                if (selectedKeys != 0 || oldWakenUp || wakenUp.get() || hasTasks() || hasScheduledTasks()) {
+                if (selectedKeys != 0 || oldWakenUp || wakenUp.get() || hasTasks() || hasScheduledTasks()) {// 如果发生了关注的事件则，立即break；
                     // - Selected something,
                     // - waken up by user, or
                     // - the task queue has a pending task.
@@ -811,11 +813,11 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                 }
 
                 long time = System.nanoTime();
-                if (time - TimeUnit.MILLISECONDS.toNanos(timeoutMillis) >= currentTimeNanos) {
+                if (time - TimeUnit.MILLISECONDS.toNanos(timeoutMillis) >= currentTimeNanos) {// 防止多次 select() 导致的 CPU 100%，
                     // timeoutMillis elapsed without anything selected.
                     selectCnt = 1;
                 } else if (SELECTOR_AUTO_REBUILD_THRESHOLD > 0 &&
-                        selectCnt >= SELECTOR_AUTO_REBUILD_THRESHOLD) {
+                        selectCnt >= SELECTOR_AUTO_REBUILD_THRESHOLD) {// 当超过一定次数后，对selector进行重建
                     // The code exists in an extra method to ensure the method is not too big to inline as this
                     // branch is not very likely to get hit very frequently.
                     selector = selectRebuildSelector(selectCnt);

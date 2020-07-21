@@ -151,14 +151,14 @@ abstract class PoolArena<T> implements PoolArenaMetric {
     // MAX: 10 0000 0000 >>> 4 = 10 0000 = 32
     // MIN: 00 0000 1000 >>> 4 = 00 0000 = 0
     // 00 0000 ~ 10 0000 = 0 ~ 32
-    static int tinyIdx(int normCapacity) {
+    static int tinyIdx(int normCapacity) {// 16B 32B 48B 64B 80B 96B 112B ... 496B
         return normCapacity >>> 4;
     }
 
     static int smallIdx(int normCapacity) {
         int tableIdx = 0;
         int i = normCapacity >>> 10;
-        while (i != 0) {
+        while (i != 0) {//512B 1k 2k 4k
             i >>>= 1;
             tableIdx ++;
         }
