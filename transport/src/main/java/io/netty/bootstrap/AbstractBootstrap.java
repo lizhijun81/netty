@@ -282,7 +282,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     }
 
     private ChannelFuture doBind(final SocketAddress localAddress) {
-        final ChannelFuture regFuture = initAndRegister();
+        final ChannelFuture regFuture = initAndRegister();// 初始化NioServerSocketChannel，并且将NioServerSocketChannel注册到Boss的NioEventLoop线程;
         final Channel channel = regFuture.channel();
         if (regFuture.cause() != null) {
             return regFuture;// 失败返回
@@ -321,6 +321,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
         Channel channel = null;
         try {
             channel = channelFactory.newChannel();// 反射创建 NioServerSocketChannel 实例
+            // 初始化，将 boss 的 手动设置的 ChannelHandler 和 内初创建的ServerBootstrapAcceptor(ServerBootstrapAcceptor) 添加到 NioServerSocketChannel的Pipeline
             init(channel);
         } catch (Throwable t) {
             if (channel != null) {

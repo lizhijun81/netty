@@ -209,6 +209,11 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
         return new Map.Entry[size];
     }
 
+    /**
+     * 当NioServerSocketChannel 与客户端建立连接后
+     *  1.对NioSocketChannel 进行初始化
+     *  2.NioSocketChannel 注册到 Work 线程池的NioEventLoop中
+     */
     private static class ServerBootstrapAcceptor extends ChannelInboundHandlerAdapter {
 
         private final EventLoopGroup childGroup;

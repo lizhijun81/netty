@@ -526,7 +526,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                         // again so that we process inbound data.
                         //
                         // See https://github.com/netty/netty/issues/4805
-                        beginRead();
+                        beginRead();// NioServerSocketChannel 的Accept事件；NioSocketChannel的Read事件；
                     }
                 }
             } catch (Throwable t) {

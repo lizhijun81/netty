@@ -753,8 +753,8 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
         }
 
         boolean inEventLoop = inEventLoop();
-        addTask(task);
-        if (!inEventLoop) {
+        addTask(task);// 添加IOTask； channel 注册到 EventLoop；
+        if (!inEventLoop) {// 如果当前线程和当前EventLoop绑定的线程不是同一个线程，则启动当前EventLoop绑定的线程
             startThread();
             if (isShutdown()) {
                 boolean reject = false;
@@ -859,7 +859,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
     private static final long SCHEDULE_PURGE_INTERVAL = TimeUnit.SECONDS.toNanos(1);
 
     private void startThread() {
-        if (state == ST_NOT_STARTED) {
+        if (state == ST_NOT_STARTED) {// 线程没有启动时才创建Thread
             if (STATE_UPDATER.compareAndSet(this, ST_NOT_STARTED, ST_STARTED)) {
                 try {
                     doStartThread();
